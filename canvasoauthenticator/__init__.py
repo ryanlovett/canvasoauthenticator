@@ -145,8 +145,8 @@ class CanvasOAuthenticator(GenericOAuthenticator):
 
             # examples: [{'enrollment_state': 'active', 'role': 'TeacherEnrollment', 'role_id': 1773, 'type': 'teacher', 'user_id': 12345}],
             # https://canvas.instructure.com/doc/api/courses.html#method.courses.index
-            # there may be multiple enrollments per course
-            enrollment_types = list(
+            # There may be multiple (or even duplicate) enrollments per course
+            enrollment_types = set(
                 map(lambda x: x.get("type", None), course.get("enrollments", []))
             )
 
