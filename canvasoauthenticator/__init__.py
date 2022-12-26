@@ -8,8 +8,8 @@ class CanvasOAuthenticator(GenericOAuthenticator):
     """
     Canvas OAuth2 based authenticator for JupyterHub.
 
-    Collects info about user & enrolled courses from canvas,
-    puts them into auth_state. To refresh, user has to re-login.
+    Assigns users to groups based on their course enrollments.
+    To refresh, the user has to re-login.
     """
 
     strip_email_domain = Unicode(
