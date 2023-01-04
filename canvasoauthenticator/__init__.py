@@ -156,19 +156,15 @@ class CanvasOAuthenticator(GenericOAuthenticator):
         return groups
 
     async def authenticate(self, handler, data=None):
-        """
-        Augment base user auth info with course info
-        """
+        """Augment base user auth info with course info."""
         user = await super().authenticate(handler, data)
         courses = await self.get_courses(user["auth_state"]["access_token"])
         user["groups"] = self.extract_course_groups(courses)
         return user
 
     def normalize_username(self, username):
+        """Strip the user's email domain, if enabled."""
         username = username.lower()
-        # To make life easier & match usernames with existing users who were
-        # created with google auth, we want to strip the domain name. If not,
-        # we use the full email as the official user name
         if self.strip_email_domain and username.endswith("@" + self.strip_email_domain):
             return username.split("@")[0]
         return username
