@@ -125,16 +125,29 @@ class CanvasOAuthenticator(GenericOAuthenticator):
 
         return data
 
-    def format_group(self, course_identifier, enrollment_type):
-        if enrollment_type is None:
-            return f"canvas::{course_identifier}"
-        else:
-            return f"canvas::{course_identifier}::{enrollment_type}"
-
-    def extract_course_groups(self, courses):
+    async def get_self_groups(self, token):
         """
-        Extract course identifiers for each course the user is enrolled in
-        and format them as group names.
+        Get list of active groups for the current user.
+
+        See https://canvas.instructure.com/doc/api/groups.html#method.groups.index
+        """
+        url = f"{self.canvas_url}/api/v1/users/self/groups"
+
+        data = await self.get_canvas_items(token, url)
+
+        return data
+
+    def format_jupyterhub_group(self, *terms):
+        """
+        Return a group name assembled from provided terms.
+        """
+        return "::".join(map(str(terms)))
+
+    def groups_from_canvas_courses(self, courses):
+        """
+        Create group identifiers for each canvas course the user is enrolled in.
+
+        Formatted as course::{course_id}::enrollment_type::{enrollment_type}
         """
         groups = []
 
@@ -151,15 +164,54 @@ class CanvasOAuthenticator(GenericOAuthenticator):
             )
 
             for enrollment_type in enrollment_types:
-                groups.append(self.format_group(course_id, enrollment_type))
+                groups.append(
+                    self.format_jupyterhub_group(
+                        "course", course_id, "enrollment_type", enrollment_type
+                    )
+                )
 
         return groups
+
+    def groups_from_canvas_groups(self, self_groups):
+        """
+        Create group identifiers for each canvas group the user is a member of.
+
+        Formatted as {context_type}::{context_id}::group::{name}
+        e.g. `course::12345::group::mygroup1`
+             `account::23456::group::mygroup1`
+        """
+        # There is no way to distinguish if the same group name appears in
+        # multiple group sets. We use a set to eliminate duplicates.
+        groups = set()
+
+        for group in self_groups:
+            if "name" not in group:
+                continue
+            name = group.get("name")
+            # `context_type` might be "Course" or "account"
+            context_type = group.get("context_type").lower()
+            # The corresponding id field, e.g. `course_id` or `account_id`
+            context_id_field = context_type + "_id"
+            context_id = group.get(context_id_field, 0)
+            groups.add(
+                self.format_jupyterhub_group(context_type, context_id, "group", name)
+            )
+
+        return list(groups)
 
     async def authenticate(self, handler, data=None):
         """Augment base user auth info with course info."""
         user = await super().authenticate(handler, data)
-        courses = await self.get_courses(user["auth_state"]["access_token"])
-        user["groups"] = self.extract_course_groups(courses)
+        access_token = user["auth_state"]["access_token"]
+
+        courses = await self.get_courses(access_token)
+        course_group_names = self.groups_from_canvas_courses(courses)
+
+        self_groups = await self.get_self_groups(access_token)
+        self_group_names = self.groups_from_canvas_groups(self_groups)
+
+        user["groups"] = course_group_names + self_group_names
+
         return user
 
     def normalize_username(self, username):
