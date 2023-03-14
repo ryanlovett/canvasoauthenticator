@@ -115,7 +115,7 @@ class CanvasOAuthenticator(GenericOAuthenticator):
 
     async def get_courses(self, token):
         """
-        Get list of courses enrolled by the current user
+        Get list of active courses for the current user.
 
         See https://canvas.instructure.com/doc/api/courses.html#method.courses.index
         """
