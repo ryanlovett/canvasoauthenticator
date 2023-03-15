@@ -104,7 +104,7 @@ class CanvasOAuthenticator(GenericOAuthenticator):
             async with session.get(url, headers=headers, params=self.extra_params) as r:
                 if r.status != 200:
                     raise Exception(
-                        f"error fetching items for {self.username}: {url} -- {r.status} -- {r.text()}"
+                        f"error fetching items {url} -- {r.status} -- {r.text()}"
                     )
                 data = await r.json()
                 if "next" in r.links.keys():
