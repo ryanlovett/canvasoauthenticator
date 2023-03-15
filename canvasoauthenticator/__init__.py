@@ -141,7 +141,7 @@ class CanvasOAuthenticator(GenericOAuthenticator):
         """
         Return a group name assembled from provided terms.
         """
-        return "::".join(map(str(terms)))
+        return "::".join(map(str, terms))
 
     def groups_from_canvas_courses(self, courses):
         """
