@@ -1,6 +1,6 @@
 # CanvasOAuthenticator 
 
-CanvasOAuthenticator is a JupyterHub [https://github.com/jupyterhub/oauthenticator](OAuthenticator) that integrates with [Canvas LMS](https://www.instructure.com/canvas) instances. It can also create JupyterHub groups based on Canvas enrollments and groups.
+CanvasOAuthenticator is a JupyterHub [OAuthenticator](https://github.com/jupyterhub/oauthenticator) that integrates with [Canvas LMS](https://www.instructure.com/canvas) instances. It can also create JupyterHub groups based on Canvas enrollments and groups.
 
 ## Configuration
 
