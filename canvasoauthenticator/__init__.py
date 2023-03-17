@@ -188,7 +188,7 @@ class CanvasOAuthenticator(GenericOAuthenticator):
             if "name" not in group:
                 continue
             name = group.get("name")
-            # `context_type` might be "Course" or "account"
+            # `context_type` might be "Course" or "Account"
             context_type = group.get("context_type").lower()
             # The corresponding id field, e.g. `course_id` or `account_id`
             context_id_field = context_type + "_id"
