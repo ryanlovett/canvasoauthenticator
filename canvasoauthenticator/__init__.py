@@ -145,9 +145,10 @@ class CanvasOAuthenticator(GenericOAuthenticator):
 
     def groups_from_canvas_courses(self, courses):
         """
-        Create group identifiers for each canvas course the user is enrolled in.
+        Create group identifiers for each canvas course the user is enrolled in:
 
-        Formatted as course::{course_id}::enrollment_type::{enrollment_type}
+          course::{course_id}
+          course::{course_id}::enrollment_type::{enrollment_type}
         """
         groups = []
 
@@ -156,6 +157,9 @@ class CanvasOAuthenticator(GenericOAuthenticator):
             if course_id is None:
                 continue
 
+            # Creates `course::{course_id}`
+            groups.append(self.format_jupyterhub_group("course", course_id))
+
             # examples: [{'enrollment_state': 'active', 'role': 'TeacherEnrollment', 'role_id': 1773, 'type': 'teacher', 'user_id': 12345}],
             # https://canvas.instructure.com/doc/api/courses.html#method.courses.index
             # There may be multiple (or even duplicate) enrollments per course
@@ -163,6 +167,7 @@ class CanvasOAuthenticator(GenericOAuthenticator):
                 map(lambda x: x.get("type", None), course.get("enrollments", []))
             )
 
+            # Creates `course::{course_id}::enrollment_type::{enrollment_type}`
             for enrollment_type in enrollment_types:
                 groups.append(
                     self.format_jupyterhub_group(
