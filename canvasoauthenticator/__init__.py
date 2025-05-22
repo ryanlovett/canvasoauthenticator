@@ -228,8 +228,10 @@ class CanvasOAuthenticator(GenericOAuthenticator):
             self_group_names = self.groups_from_canvas_groups(self_groups)
 
             user["groups"] = course_group_names + self_group_names
+            self.log.info(f"setting groups in auth_state: {user['groups']=}.")
             user["auth_state"][self.user_auth_state_key]["groups"] = user["groups"]
 
+        self.log.info(f"{user=}")
         return user
 
     def normalize_username(self, username):
