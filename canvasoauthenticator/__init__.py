@@ -17,7 +17,8 @@ class CanvasOAuthenticator(GenericOAuthenticator):
 
     @default("auth_state_groups_key")
     def _auth_state_groups_key_default(self):
-        return "canvas_user.groups"
+        # Do not set this within "canvas_user", since Canvas is not providing groups.
+        return f"groups"
 
     strip_email_domain = Unicode(
         "",
@@ -211,28 +212,28 @@ class CanvasOAuthenticator(GenericOAuthenticator):
 
         return list(groups)
 
-    async def authenticate(self, handler, data=None):
-        """Augment base user auth info with course info."""
-        user = await super().authenticate(handler, data)
-        access_token = user["auth_state"]["access_token"]
-
+    async def update_auth_model(self, auth_model):
+        """
+        Ensure groups are set in auth_state for JupyterHub group management.
+        This is called after authenticate and before group sync.
+        """
+        auth_model = await super().update_auth_model(auth_model)
         courses = await self.get_courses(access_token)
 
-        # If the authenticator's concept of group membership is to be preserved
+        # Preserve courses in auth_state for later use by the spawner
+        auth_model["auth_state"]["courses"] = courses
+
         if self.manage_groups:
-            # Create groups based on Canvas courses
+            access_token = auth_model["auth_state"]["access_token"]
+
             course_group_names = self.groups_from_canvas_courses(courses)
 
-            # Create groups based on Canvas groups
             self_groups = await self.get_self_groups(access_token)
             self_group_names = self.groups_from_canvas_groups(self_groups)
 
-            user["groups"] = course_group_names + self_group_names
-            self.log.info(f"setting groups in auth_state: {user['groups']=}.")
-            user["auth_state"][self.user_auth_state_key]["groups"] = user["groups"]
-
-        self.log.info(f"{user=}")
-        return user
+            groups = course_group_names + self_group_names
+            auth_model["auth_state"][self.auth_state_groups_key] = groups
+        return auth_model
 
     def normalize_username(self, username):
         """Strip the user's email domain, if enabled."""
