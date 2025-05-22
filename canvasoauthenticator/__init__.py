@@ -216,10 +216,11 @@ class CanvasOAuthenticator(GenericOAuthenticator):
         user = await super().authenticate(handler, data)
         access_token = user["auth_state"]["access_token"]
 
+        courses = await self.get_courses(access_token)
+
         # If the authenticator's concept of group membership is to be preserved
         if self.manage_groups:
             # Create groups based on Canvas courses
-            courses = await self.get_courses(access_token)
             course_group_names = self.groups_from_canvas_courses(courses)
 
             # Create groups based on Canvas groups
