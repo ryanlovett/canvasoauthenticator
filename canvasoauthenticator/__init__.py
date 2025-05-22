@@ -228,7 +228,7 @@ class CanvasOAuthenticator(GenericOAuthenticator):
             self_group_names = self.groups_from_canvas_groups(self_groups)
 
             user["groups"] = course_group_names + self_group_names
-            user["auth_state"]["groups"] = user["groups"]
+            user["auth_state"][self.user_auth_state_key]["groups"] = user["groups"]
 
         return user
 
