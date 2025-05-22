@@ -12,6 +12,13 @@ class CanvasOAuthenticator(GenericOAuthenticator):
     To refresh, the user has to re-login.
     """
 
+    # The name of the user key expected to be present in `auth_state`
+    user_auth_state_key = "canvas_user"
+
+    @default("auth_state_groups_key")
+    def _auth_state_groups_key_default(self):
+        return "canvas_user.groups"
+
     strip_email_domain = Unicode(
         "",
         config=True,
@@ -220,6 +227,7 @@ class CanvasOAuthenticator(GenericOAuthenticator):
             self_group_names = self.groups_from_canvas_groups(self_groups)
 
             user["groups"] = course_group_names + self_group_names
+            user["auth_state"]["groups"] = user["groups"]
 
         return user
 
