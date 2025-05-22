@@ -218,14 +218,14 @@ class CanvasOAuthenticator(GenericOAuthenticator):
         This is called after authenticate and before group sync.
         """
         auth_model = await super().update_auth_model(auth_model)
+
+        access_token = auth_model["auth_state"]["access_token"]
         courses = await self.get_courses(access_token)
 
         # Preserve courses in auth_state for later use by the spawner
         auth_model["auth_state"]["courses"] = courses
 
         if self.manage_groups:
-            access_token = auth_model["auth_state"]["access_token"]
-
             course_group_names = self.groups_from_canvas_courses(courses)
 
             self_groups = await self.get_self_groups(access_token)
