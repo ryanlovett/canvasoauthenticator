@@ -97,7 +97,7 @@ class CanvasOAuthenticator(GenericOAuthenticator):
             "client_secret": self.client_secret,
             # We set replace_tokens=1 to prevent tokens from accumulating.
             # https://github.com/instructure/canvas-lms/blob/release/2022-08-03.12/spec/controllers/oauth2_provider_controller_spec.rb#L520
-            "replace_tokens": 1,
+            #"replace_tokens": 1,
         }
 
     async def get_canvas_items(self, token, url):
